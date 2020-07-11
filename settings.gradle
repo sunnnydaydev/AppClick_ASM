@@ -1,2 +1,2 @@
-include ':app'
+include ':app', ':mytransform'
 rootProject.name='AppClick_ASM'

@@ -1,0 +1,29 @@
+apply plugin: 'groovy'
+apply plugin: 'java-library'
+apply plugin: 'maven'
+
+dependencies {
+    //Gradle Plugin 依赖
+    implementation gradleApi()
+    //本地发布 Plugin
+    implementation localGroovy()
+    //安卓 gradle 环境 支持 gradle
+    implementation 'com.android.tools.build:gradle:3.5.3'
+}
+
+repositories {
+    mavenCentral()
+}
+
+//本地发布，发布到根目录的 /repo 文件夹下
+uploadArchives{
+    repositories {
+        mavenDeployer{
+            //本地仓库路径。放到项目根目录下repo文件夹下
+            repository(url :uri('../repo'))
+            pom.groupId = "com.sunnyday.mytransform"
+            pom.artifactId="mytransform"
+            pom.version = '1.0.0'
+        }
+    }
+}
