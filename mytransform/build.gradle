@@ -7,7 +7,7 @@ dependencies {
     implementation gradleApi()
     //本地发布 Plugin
     implementation localGroovy()
-    //安卓 gradle 环境 支持 gradle
+    //安卓 gradle 环境支持(要求版本1.5+)
     implementation 'com.android.tools.build:gradle:3.5.3'
 }
 
