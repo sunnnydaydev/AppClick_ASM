@@ -40,20 +40,18 @@
 >
 > 1、自定义Gradle插件
 >
-> 2、Trasnform 相关API 
+> 2、Transform 相关api
 >
 > 3、ASM相关API知识
 >
 > 4、字节码知识入门
 
-### Gradle Transform 
+### [Gradle Transform](https://github.com/sunnnydaydev/AppClick_ASM/blob/master/GradleTransform.md)
 
-   待续！！！
 
 ### AMS 
 
   待续！！！
-
 
 
 ### ASM 实战全埋点
