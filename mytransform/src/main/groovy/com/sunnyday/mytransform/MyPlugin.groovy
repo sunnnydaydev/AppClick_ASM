@@ -10,7 +10,7 @@ class MyPlugin implements Plugin<Project>{
     @Override
     void apply(Project project) {
         // 注册自定义Transform
-       AppExtension appExtension = project.extensions.findByName(AppExtension.class)
+       AppExtension appExtension = project.extensions.findByType(AppExtension.class)
         appExtension.registerTransform(new MyTransform(project))
     }
 }
