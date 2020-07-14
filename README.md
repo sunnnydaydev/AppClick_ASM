@@ -48,9 +48,8 @@
 >
 > 4、字节码知识入门
 
-### Gradle Transform 
+### [Gradle Transform](https://github.com/sunnnydaydev/AppClick_ASM/blob/master/GradleTransform.md)
 
-   待续！！！
 
 ### AMS 
 

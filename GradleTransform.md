@@ -77,6 +77,7 @@ ps：一般我们使用TransformManager.SCOPE_FULL_PROJECT这个常量值。这�
 ###### 1、自定义Transform 简单实践
 
 ```java
+
 /**
  * 简单的目录拷贝实践
  *
@@ -152,6 +153,8 @@ class MyTransform extends Transform {
                                 directoryInput.contentTypes,
                                 directoryInput.scopes,
                                 Format.DIRECTORY)
+                        // todo 操作字节码，实现自己的逻辑（使用ASM）
+                      
                         // 将input目录复制到outPut目录
                         FileUtils.copyDirectory(directoryInput.file, dest)
                 }
@@ -160,7 +163,6 @@ class MyTransform extends Transform {
                     JarInput jarInput ->
                         // 重命名输出文件,因为同目录下copy file 会冲突
                         def jarName = jarInput.name
-                         ////DigestUtils  导包注意org.apache.commons，非gradle包下的
                         def md5Name = DigestUtils.md5Hex(jarInput.file.absolutePath)
                         if (jarName.endsWith(".jar")) {
                             jarName = jarName.substring(0, jarName.length() - 4)
@@ -168,11 +170,12 @@ class MyTransform extends Transform {
                         //生成输出路径
                         def dest = outputProvider.getContentLocation(
                                 jarName + md5Name,
-                                jarInput.contentTypes,
-                                jarInput.scopes,
+                                JarInput.ContentType,
+                                JarInput.Scope,
                                 Format.JAR
                         )
-                        FileUtils.copyFile(jarInput.file, dest)//FileUtils  导包注意org.apache.commons，非gradle包下的
+                          // todo 操作字节码，实现自己的逻辑（使用ASM）
+                        FileUtils.copyDirectory(jarInput.file, dest)
                 }
         }
 
@@ -216,29 +219,7 @@ class MyPlugin implements Plugin<Project>{
 
 ```java
 Executing tasks: [:app:assembleDebug] in project F:\ASworkpalce\AppClick_ASM
-
-> Task :app:preBuild UP-TO-DATE
-> Task :app:preDebugBuild UP-TO-DATE
-> Task :app:checkDebugManifest
-> Task :app:generateDebugBuildConfig
-> Task :app:javaPreCompileDebug
-> Task :app:mainApkListPersistenceDebug
-> Task :app:generateDebugResValues
-> Task :app:createDebugCompatibleScreenManifests
-> Task :app:mergeDebugShaders
-> Task :app:compileDebugShaders
-> Task :app:generateDebugAssets
-> Task :app:processDebugJavaRes NO-SOURCE
-> Task :app:validateSigningDebug
-> Task :app:signingConfigWriterDebug
-> Task :app:checkDebugDuplicateClasses
-> Task :app:compileDebugRenderscript NO-SOURCE
-> Task :app:compileDebugAidl NO-SOURCE
-> Task :app:generateDebugResources
-> Task :app:processDebugManifest
-> Task :app:mergeDebugResources
-> Task :app:processDebugResources
-> Task :app:compileDebugJavaWithJavac
+。。。略
 > Task :app:compileDebugSources
 > Task :app:mergeDebugAssets
 
@@ -251,22 +232,11 @@ Executing tasks: [:app:assembleDebug] in project F:\ASworkpalce\AppClick_ASM
 ######################################
 
 > Task :app:transformClassesWithDexBuilderForDebug
-> Task :app:mergeDebugJavaResource
-> Task :app:mergeLibDexDebug
-> Task :app:mergeDebugJniLibFolders
-> Task :app:mergeDebugNativeLibs
-> Task :app:stripDebugDebugSymbols
-> Task :app:mergeProjectDexDebug
-> Task :app:mergeExtDexDebug
-> Task :app:packageDebug
-> Task :app:assembleDebug
+。。。略
 
-Deprecated Gradle features were used in this build, making it incompatible with Gradle 6.0.
-Use '--warning-mode all' to show the individual deprecation warnings.
-See https://docs.gradle.org/5.4.1/userguide/command_line_interface.html#sec:command_line_warnings
-
-BUILD SUCCESSFUL in 28s
-26 actionable tasks: 26 executed
 
 ```
 
+#### 注意
+
+> 即使我们什么都没有做，也需要把所有的输入文件拷贝到目标目录下，否则下一个Task就没有TransformInput了。如果我们空实现了transform方法，最后会导致打包的apk缺少.class文件。
