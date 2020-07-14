@@ -10,10 +10,9 @@ import com.android.build.api.transform.TransformException
 import com.android.build.api.transform.TransformInput
 import com.android.build.api.transform.TransformOutputProvider
 import com.android.build.gradle.internal.pipeline.TransformManager
+import org.apache.commons.codec.digest.DigestUtils
+import org.apache.commons.io.FileUtils
 import org.gradle.api.Project
-import org.gradle.api.artifacts.transform.TransformOutputs
-import org.gradle.internal.impldep.org.apache.commons.codec.digest.DigestUtils
-import org.gradle.internal.impldep.org.apache.commons.io.FileUtils
 /**
  * 简单的目录拷贝实践
  *
@@ -97,6 +96,7 @@ class MyTransform extends Transform {
                     JarInput jarInput ->
                         // 重命名输出文件,因为同目录下copy file 会冲突
                         def jarName = jarInput.name
+                         ////DigestUtils  导包注意org.apache.commons，非gradle包下的
                         def md5Name = DigestUtils.md5Hex(jarInput.file.absolutePath)
                         if (jarName.endsWith(".jar")) {
                             jarName = jarName.substring(0, jarName.length() - 4)
@@ -104,11 +104,11 @@ class MyTransform extends Transform {
                         //生成输出路径
                         def dest = outputProvider.getContentLocation(
                                 jarName + md5Name,
-                                JarInput.ContentType,
-                                JarInput.Scope,
+                                jarInput.contentTypes,
+                                jarInput.scopes,
                                 Format.JAR
                         )
-                        FileUtils.copyDirectory(jarInput.file, dest)
+                        FileUtils.copyFile(jarInput.file, dest)//FileUtils  导包注意org.apache.commons，非gradle包下的
                 }
         }
 

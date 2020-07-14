@@ -64,6 +64,12 @@ ps：一般我们使用TransformManager.SCOPE_FULL_PROJECT这个常量值。这�
 
 （4）isIncremental是否是增量构建。
 
+> 这个方法的返回值就是增量编译的开关。当开启增量构建时则Transform的input有如下几种状态：
+>
+> - NOTCHANGED: 当前文件不需处理，甚至复制操作都不用；
+> - ADDED、CHANGED: 正常处理，输出给下一个任务；
+> - REMOVED: 移除outputProvider获取路径对应的文件。
+
 ### 简单实践
 
 > 自定义插件的步骤就不在重复了，如果不熟悉可以参考[自定义Gradle Plugin](https://blog.csdn.net/qq_38350635/article/details/106986739)只是在自定义插件时要添加android gradle tools 依赖即可。这样就可使用gradle Transform api 了。
@@ -71,7 +77,6 @@ ps：一般我们使用TransformManager.SCOPE_FULL_PROJECT这个常量值。这�
 ###### 1、自定义Transform 简单实践
 
 ```java
-
 /**
  * 简单的目录拷贝实践
  *
@@ -147,8 +152,6 @@ class MyTransform extends Transform {
                                 directoryInput.contentTypes,
                                 directoryInput.scopes,
                                 Format.DIRECTORY)
-                        // todo 操作字节码，实现自己的逻辑（使用ASM）
-                      
                         // 将input目录复制到outPut目录
                         FileUtils.copyDirectory(directoryInput.file, dest)
                 }
@@ -157,6 +160,7 @@ class MyTransform extends Transform {
                     JarInput jarInput ->
                         // 重命名输出文件,因为同目录下copy file 会冲突
                         def jarName = jarInput.name
+                         ////DigestUtils  导包注意org.apache.commons，非gradle包下的
                         def md5Name = DigestUtils.md5Hex(jarInput.file.absolutePath)
                         if (jarName.endsWith(".jar")) {
                             jarName = jarName.substring(0, jarName.length() - 4)
@@ -164,12 +168,11 @@ class MyTransform extends Transform {
                         //生成输出路径
                         def dest = outputProvider.getContentLocation(
                                 jarName + md5Name,
-                                JarInput.ContentType,
-                                JarInput.Scope,
+                                jarInput.contentTypes,
+                                jarInput.scopes,
                                 Format.JAR
                         )
-                          // todo 操作字节码，实现自己的逻辑（使用ASM）
-                        FileUtils.copyDirectory(jarInput.file, dest)
+                        FileUtils.copyFile(jarInput.file, dest)//FileUtils  导包注意org.apache.commons，非gradle包下的
                 }
         }
 
@@ -203,5 +206,67 @@ class MyPlugin implements Plugin<Project>{
         appExtension.registerTransform(new MyTransform(project))
     }
 }
+```
+
+
+
+###### 3、结果
+
+> 插件引入我们的app 工程中，然后简单的运行下项目即可看见我们自定义的Transform 起作用了 log 如下：
+
+```java
+Executing tasks: [:app:assembleDebug] in project F:\ASworkpalce\AppClick_ASM
+
+> Task :app:preBuild UP-TO-DATE
+> Task :app:preDebugBuild UP-TO-DATE
+> Task :app:checkDebugManifest
+> Task :app:generateDebugBuildConfig
+> Task :app:javaPreCompileDebug
+> Task :app:mainApkListPersistenceDebug
+> Task :app:generateDebugResValues
+> Task :app:createDebugCompatibleScreenManifests
+> Task :app:mergeDebugShaders
+> Task :app:compileDebugShaders
+> Task :app:generateDebugAssets
+> Task :app:processDebugJavaRes NO-SOURCE
+> Task :app:validateSigningDebug
+> Task :app:signingConfigWriterDebug
+> Task :app:checkDebugDuplicateClasses
+> Task :app:compileDebugRenderscript NO-SOURCE
+> Task :app:compileDebugAidl NO-SOURCE
+> Task :app:generateDebugResources
+> Task :app:processDebugManifest
+> Task :app:mergeDebugResources
+> Task :app:processDebugResources
+> Task :app:compileDebugJavaWithJavac
+> Task :app:compileDebugSources
+> Task :app:mergeDebugAssets
+
+> Task :app:transformClassesWithMyTransformForDebug
+
+######################################
+#######                        #######
+#######   Transform practise   #######
+#######                        #######
+######################################
+
+> Task :app:transformClassesWithDexBuilderForDebug
+> Task :app:mergeDebugJavaResource
+> Task :app:mergeLibDexDebug
+> Task :app:mergeDebugJniLibFolders
+> Task :app:mergeDebugNativeLibs
+> Task :app:stripDebugDebugSymbols
+> Task :app:mergeProjectDexDebug
+> Task :app:mergeExtDexDebug
+> Task :app:packageDebug
+> Task :app:assembleDebug
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 6.0.
+Use '--warning-mode all' to show the individual deprecation warnings.
+See https://docs.gradle.org/5.4.1/userguide/command_line_interface.html#sec:command_line_warnings
+
+BUILD SUCCESSFUL in 28s
+26 actionable tasks: 26 executed
+
 ```
 

@@ -20,11 +20,13 @@
 >
 > 1、Transform 要以插件的形式引入，说明我们要自定义Gradle 插件。
 >
-> 2、Gradle 内置的 Transform（Task）有 mergeManifest、Proguard 等等。我们自定义的 Transform 与系统自带的一些Trasnform 形成了一个 Trasnform 链，我们定义的 Transform 会首先执行。
+> 2、其实每个Transform就是一个Task
 >
-> 3、Transform是作用在.class编译后，打包成.dex前，Transform在这期间可以对`.class字节码文件`进行再处理。
+> 3、Gradle 内置的 Transform（Task）有 mergeManifest、Proguard 等等。我们自定义的 Transform 与系统自带的一些Trasnform 形成了一个 Trasnform 链，我们定义的 Transform 会首先执行。
 >
-> 4、概括来说，Transform 就是把输入的 .class 文件转变成目标字节码文件。
+> 4、Transform是作用在.class编译后，打包成.dex前，Transform在这期间可以对`.class字节码文件`进行再处理。
+>
+> 5、概括来说，Transform 就是把输入的 .class 文件转变成目标字节码文件。
 
 ### ASM简介
 
@@ -40,18 +42,20 @@
 >
 > 1、自定义Gradle插件
 >
-> 2、Transform 相关api
+> 2、Trasnform 相关API 
 >
 > 3、ASM相关API知识
 >
 > 4、字节码知识入门
 
-### [Gradle Transform](https://github.com/sunnnydaydev/AppClick_ASM/blob/master/GradleTransform.md)
+### Gradle Transform 
 
+   待续！！！
 
 ### AMS 
 
   待续！！！
+
 
 
 ### ASM 实战全埋点
