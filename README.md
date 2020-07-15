@@ -51,10 +51,7 @@
 ### [Gradle Transform](https://github.com/sunnnydaydev/AppClick_ASM/blob/master/GradleTransform.md)
 
 
-### AMS 
-
-  待续！！！
-
+### [AMS](https://github.com/sunnnydaydev/AppClick_ASM/blob/master/ASM.md)
 
 
 ### ASM 实战全埋点
@@ -70,6 +67,7 @@
 - https://www.sensorsdata.cn/blog/20181206-9/
 - https://www.jianshu.com/p/37a5e058830a
 - https://www.jianshu.com/p/9039a3e46dbc
+- ASM4使用指南.pdf
 
 
 
