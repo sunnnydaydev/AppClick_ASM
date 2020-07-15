@@ -1,35 +1,9 @@
-简介
+package com.sunnyday.appclick_asm.test;
 
-> ASM 是一个功能比较齐全的 Java 字节码操作与分析框架。它能被用来动态生成类或者增强既有类的功能。
-
-### 功能
-
-> 1、ASM 可以直接 产生二进制 class 文件。
->
-> 2、ASM可以在类被加载入 Java 虚拟机之前动态改变类的行为。
->
-> ps：Java class 被存储在严格格式定义 的 .class 文件里，这些类文件拥有足够的元数据来解析类中的所有元素，包括类名称、方法、属性以及 Java 字节码(指令)。 ASM 从类文件中读入这些信息后，能够改变类行为、分析类的信息，甚至能够根据具体的要求生成新的类。
-
-
-
-### 核心类简介
-
-|      类名       |                    介绍                    |
-| :-----------: | :--------------------------------------: |
-|  ClassReader  |          该类用来解析编译过的class字节码文件。           |
-|  ClassWriter  | 该类用来重新构建编译后的类，比如说修改类名、属性以及方法，甚至可以生成新的类的字节码文件。 |
-| ClassVisitor  | 主要负责 “拜访” 类成员信息。其中包括类上的注解，类的构造方法，类的字段，类的方法，静态代码块。 |
-| AdviceAdapter | 实现了MethodVisitor接口，主要负责 “拜访” 方法的信息，用来进行具体的方法字节码操作。 |
-
-### 重点介绍：ClassVisitor
-
->这个类中的每个方法都对应于同名的类文件结构部分。ClassVisitor 定义了一系列的 API，它按照一定的标准次序来遍历类中的成员。在 ClassVisitor 中，我们可以根据实际的需求进行条件判断，只要满足我们特定条件的类，我们才会去修改它的方法。比如， 我们要自动采集 Button 的点击事件，那么只有实现了 View$OnClickListener 接口的类，我们才会去遍历它的方法并找到 onClick(view) 方法，然后进行修改操作。
->
->ps：ClassVisitor 内部的方法按特定顺序执行，这里需要留意下。后文介绍。
-
-###### 1、ClassVisitor重要方法介绍
-
-```java
+import org.objectweb.asm.AnnotationVisitor;
+import org.objectweb.asm.ClassVisitor;
+import org.objectweb.asm.FieldVisitor;
+import org.objectweb.asm.MethodVisitor;
 
 /**
  * Create by SunnyDay on 20:45 2020/07/15
@@ -49,7 +23,7 @@ public class AutoTrace extends ClassVisitor {
     /**
      * 扫描类时第一个拜访的方法
      * @param version 代表jdk的版本。比如52代表jdk1.8。
-     * @param access 类的修饰符。修饰符在 ASM 中是以“ACC_”开头的常量。可以作用到类级别上 的修饰符有:ACC_PUBLIC(代表public)
+     * @param access 类的修饰符。修饰符在 ASM 中是以“ACC_”开头的常量。可以作用到类级别上的修饰符有:ACC_PUBLIC(代表public)
      * @param name 类名。通常我们会使用完成的包名+类名表示类。例如com.example.MyClass。但是在字节码中是以路径的形式表示的。
      *             例如com/example/MyClass。值得注意的是，虽然是路径表示法但是不需要写明类的“.class”扩展名。
      * @param signature 表示泛型信息，如果类未定义任何泛型，则这里参数为空。
@@ -103,21 +77,3 @@ public class AutoTrace extends ClassVisitor {
     }
 
 }
-```
-
-###### 2、visit方法的version对应的jdk版本补充
-
-| **JDK版本** | **int数值** |
-| :-------: | :-------: |
-|   jdk 8   |    52     |
-|   jdk 7   |    51     |
-|   jdk 6   |    50     |
-|   jdk 5   |    49     |
-|  jdk 1.4  |    48     |
-|  jdk 1.3  |    47     |
-|  jdk 1.2  |    46     |
-|  jdk 1.1  |    45     |
-
-###### 3、visit方法的access常量补充
-
-待续！！！
