@@ -4,6 +4,7 @@ import org.objectweb.asm.AnnotationVisitor;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.FieldVisitor;
 import org.objectweb.asm.MethodVisitor;
+import org.objectweb.asm.Opcodes;
 
 /**
  * Create by SunnyDay on 20:45 2020/07/15
@@ -18,14 +19,14 @@ public class AutoTrace extends ClassVisitor {
      * Opcodes#ASM7
      * */
     public AutoTrace(int api) {
-        super(api);
+        super(Opcodes.ACC_PUBLIC);
     }
     /**
      * 扫描类时第一个拜访的方法
      * @param version 代表jdk的版本。比如52代表jdk1.8。
-     * @param access 类的修饰符。修饰符在 ASM 中是以“ACC_”开头的常量。可以作用到类级别上的修饰符有:ACC_PUBLIC(代表public)
-     * @param name 类名。通常我们会使用完成的包名+类名表示类。例如com.example.MyClass。但是在字节码中是以路径的形式表示的。
-     *             例如com/example/MyClass。值得注意的是，虽然是路径表示法但是不需要写明类的“.class”扩展名。
+     * @param access  类的修饰符。修饰符在 ASM 中是以“ACC_”开头的常量。可以作用到类级别上的修饰符有:ACC_PUBLIC(代表public)
+     * @param name    类名。通常我们会使用完成的包名+类名表示类。例如com.example.MyClass。但是在字节码中是以路径的形式表示的。
+     *                例如com/example/MyClass。值得注意的是，虽然是路径表示法但是不需要写明类的“.class”扩展名。
      * @param signature 表示泛型信息，如果类未定义任何泛型，则这里参数为空。
      * @param superName 表 示 所 继 承 的 父 类。由 于 Java 的 类 是 单 根 结 构，即 所 有 类 都 继 承 自 java.lang.Object。
      *                  因此可以简单的理解为任何类都会具有一个父类。虽然在编 写 Java 程序时我们没有去写 extends 关键字去明确
@@ -62,6 +63,11 @@ public class AutoTrace extends ClassVisitor {
 
     /**
      * 扫描字段时进行调用
+     * @param access 字段修饰符
+     * @param name 字段名
+     * @param descriptor  字段类型
+     * @param signature 泛型相关信息
+     * @param value 字段值
      * */
     @Override
     public FieldVisitor visitField(int access, String name, String descriptor, String signature, Object value) {

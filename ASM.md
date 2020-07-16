@@ -1,4 +1,4 @@
-简介
+### 简介
 
 > ASM 是一个功能比较齐全的 Java 字节码操作与分析框架。它能被用来动态生成类或者增强既有类的功能。
 
@@ -88,6 +88,11 @@ public class AutoTrace extends ClassVisitor {
 
     /**
      * 扫描字段时进行调用
+     * @param access 字段修饰符
+     * @param name 字段名
+     * @param descriptor  字段类型
+     * @param signature 泛型相关信息
+     * @param value 字段值
      * */
     @Override
     public FieldVisitor visitField(int access, String name, String descriptor, String signature, Object value) {
@@ -105,7 +110,7 @@ public class AutoTrace extends ClassVisitor {
 }
 ```
 
-###### 2、visit方法的version对应的jdk版本补充
+###### 1、visit方法的version对应的jdk版本补充
 
 | **JDK版本** | **int数值** |
 | :-------: | :-------: |
@@ -118,6 +123,64 @@ public class AutoTrace extends ClassVisitor {
 |  jdk 1.2  |    46     |
 |  jdk 1.1  |    45     |
 
-###### 3、visit方法的access常量补充
+###### 2、常见修饰符access补充（类、方法、字段等修饰符）
+
+> 更多参考Opcodes接口的ACC_开头常量。
+
+|    **修饰符**     |  **含义**   |
+| :------------: | :-------: |
+|   ACC_PUBLIC   |  public   |
+|  ACC_PRIVATE   |  private  |
+| ACC_PROTECTED  | protected |
+|   ACC_FINAL    |   final   |
+|   ACC_SUPER    |  extends  |
+| ACC_INTERFACE  |    接口     |
+|  ACC_ABSTRACT  |    抽象类    |
+| ACC_ANNOTATION |   注解类型    |
+|    ACC_ENUM    |   枚举类型    |
+|   ACC_STATIC   |  static   |
+
+###### 3、visitField中descriptor的补充
+
+>在已编译类中,字段类型都是用类型述符表示的。如下图。
+>
+>基元类型的描述符是单个字符：Z 表示 boolean，C 表示 char，B 表示 byte，S 表示 short， 
+>
+>I 表示 int，F 表示 float，J 表示 long，D 表示 double。一个类类型的描述符是这个类的
+>
+>内部名，前面加上字符 L ，后面跟有一个分号。例如， String 的类型描述符为
+>
+>Ljava/lang/String;。而一个数组类型的描述符是一个方括号后面跟有该数组元素类型的描
+>
+>述符。
+
+| **java类型** |      **类型描述符**       |
+| :--------: | :------------------: |
+|  boolean   |          Z           |
+|    char    |          C           |
+|    byte    |          B           |
+|   short    |          S           |
+|    int     |          I           |
+|   float    |          F           |
+|    long    |          J           |
+|   double   |          D           |
+|   Object   |  Ljava/lang/Object;  |
+|   int[]    |          [I          |
+| Object[][] | [[Ljava/lang/Object; |
+
+###### 4、visitMethod中的descriptor方法描述符
+
+> 方法描述符是一个类型描述符列表，它用一个字符串描述一个方法的参数类型和返回类型。方法描述符以左括号开头，然后是每个形参的类型描述符，然后是一个右括号，接下来是返回类型的类型描述符，如果该方法返回 void，则是 V（方法描述符中不包含方法的名字或参数名）。栗子如下表。
+
+|    **java源文件中的方法声明**     |        **方法描述符**        |
+| :----------------------: | :---------------------: |
+|   void m(int i ,int f)   |          (IF)V          |
+|     int m(Object o)      |  (Ljava/lang/Object;)I  |
+| int[] m(int i, String s) | (ILjava/lang/String;)[I |
+|    Object m(int[] i)     | ([I)Ljava/lang/Object;  |
+
+
+
+### 分析类
 
 待续！！！
