@@ -16,16 +16,18 @@
 
 |      类名       |                    介绍                    |
 | :-----------: | :--------------------------------------: |
-|  ClassReader  |          该类用来解析编译过的class字节码文件。           |
+|  ClassReader  |          该类用来分析编译过的class字节码文件。           |
 |  ClassWriter  | 该类用来重新构建编译后的类，比如说修改类名、属性以及方法，甚至可以生成新的类的字节码文件。 |
 | ClassVisitor  | 主要负责 “拜访” 类成员信息。其中包括类上的注解，类的构造方法，类的字段，类的方法，静态代码块。 |
 | AdviceAdapter | 实现了MethodVisitor接口，主要负责 “拜访” 方法的信息，用来进行具体的方法字节码操作。 |
 
-### 重点介绍：ClassVisitor
+### ClassVisitor
 
->这个类中的每个方法都对应于同名的类文件结构部分。ClassVisitor 定义了一系列的 API，它按照一定的标准次序来遍历类中的成员。在 ClassVisitor 中，我们可以根据实际的需求进行条件判断，只要满足我们特定条件的类，我们才会去修改它的方法。比如， 我们要自动采集 Button 的点击事件，那么只有实现了 View$OnClickListener 接口的类，我们才会去遍历它的方法并找到 onClick(view) 方法，然后进行修改操作。
+>1、这个类中的每个方法都对应于同名的类文件结构部分。如visit方法代表类头部分，这部分记录类名，包名，类的权限修饰，继承的父类等信息。visitMethod带不类的方法部分，这部分主要记录了方法相关的信息。
 >
->ps：ClassVisitor 内部的方法按特定顺序执行，这里需要留意下。后文介绍。
+>2、这个类中的方法按照特定的顺序调用。（顺序规则参考下文）
+>
+>3、这个类是ASM api的核心，我们生成新类、转变已编译类、分析现有类都离不开他。
 
 ###### 1、ClassVisitor重要方法介绍
 
@@ -110,7 +112,7 @@ public class AutoTrace extends ClassVisitor {
 }
 ```
 
-###### 1、visit方法的version对应的jdk版本补充
+###### 1、jdk版本对应的int类型数值补充（参考visit方法的version参数）
 
 | **JDK版本** | **int数值** |
 | :-------: | :-------: |
@@ -125,7 +127,7 @@ public class AutoTrace extends ClassVisitor {
 
 ###### 2、常见修饰符access补充（类、方法、字段等修饰符）
 
-> 更多参考Opcodes接口的ACC_开头常量。
+> 更多参考Opcodes接口源码中以ACC_开头常量。
 
 |    **修饰符**     |  **含义**   |
 | :------------: | :-------: |
@@ -140,7 +142,7 @@ public class AutoTrace extends ClassVisitor {
 |    ACC_ENUM    |   枚举类型    |
 |   ACC_STATIC   |  static   |
 
-###### 3、visitField中descriptor的补充
+###### 3、字段描述符补充（参考visitField中descriptor）
 
 >在已编译类中,字段类型都是用类型述符表示的。如下图。
 >
@@ -168,7 +170,7 @@ public class AutoTrace extends ClassVisitor {
 |   int[]    |          [I          |
 | Object[][] | [[Ljava/lang/Object; |
 
-###### 4、visitMethod中的descriptor方法描述符
+###### 4、方法描述符补充（参考visitMethod中的descriptor）
 
 > 方法描述符是一个类型描述符列表，它用一个字符串描述一个方法的参数类型和返回类型。方法描述符以左括号开头，然后是每个形参的类型描述符，然后是一个右括号，接下来是返回类型的类型描述符，如果该方法返回 void，则是 V（方法描述符中不包含方法的名字或参数名）。栗子如下表。
 
@@ -179,8 +181,45 @@ public class AutoTrace extends ClassVisitor {
 | int[] m(int i, String s) | (ILjava/lang/String;)[I |
 |    Object m(int[] i)     | ([I)Ljava/lang/Object;  |
 
+###### 5、ClassVisitor类内的方法调用顺序
+
+> 点击这个类的源码，看类的介绍时你会发现这个类中的方法是有调用顺序的。我们必须按照规定来调用。
+>
+> 如下类的源码注释摘抄整理，调用顺序：visit->visitSource->visitModule->visitNestHost->visitOuterClass
+>
+> ->......visitEnd。但是下面[] ,{},(),* ,| 代表舍意思？
+
+```java
+ 
+ {visit}
+
+ [ {visitSource} ] [ { visitModule} ] [ { visitNestHost} ][ {
+ visitOuterClass} ] 
+
+( { visitAnnotation} | { visitTypeAnnotation} | {
+ visitAttribute} )* 
+( { visitNestMember} | { visitInnerClass} | { visitField} |
+  { visitMethod} )* 
+  
+{ visitEnd}.
+ 
+ 
+```
+
+>  1、{visit} ，只用{}括起来的方法是必须被调用的。如 visit，visitEnd。
+>
+> 2、[{visitSource}],用[{}]括起来的方法最多一次调用。（也就是可以调用一次，或者不调用）
+>
+> 3、({visitAnnotation}) , 用（{}）* 括起来的方法代表可被调用任意次，|表示 方法间的调用顺序也随意。
+>
+> ps：其实符号倒无所谓，我们只需记得这些方法被调用的先后顺序，以及哪些在调用期间可被多次调用，无顺序调用即可。
+
+### ClassReader
+
+> ClassReader 类分析以字节数组形式给出的已编译类，并针对在其 accept 方法参数中传送的 ClassVisitor 实例，调用ClassVisitor 实例的 visitXxx 方法。这个类可以看作一个事件产生器。
+
+###### 1、栗子：读取指定class文件的信息
 
 
-### 分析类
 
 待续！！！

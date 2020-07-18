@@ -67,7 +67,7 @@
 - https://www.sensorsdata.cn/blog/20181206-9/
 - https://www.jianshu.com/p/37a5e058830a
 - https://www.jianshu.com/p/9039a3e46dbc
-- ASM4使用指南.pdf
+- [ASM4使用指南.pdf](https://github.com/sunnnydaydev/AppClick_ASM/blob/master/ASM4%E4%BD%BF%E7%94%A8%E6%8C%87%E5%8D%97.pdf)
 
 
 
