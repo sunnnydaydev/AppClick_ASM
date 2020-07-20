@@ -208,11 +208,11 @@ public class AutoTrace extends ClassVisitor {
 
 >  1、{visit} ，只用{}括起来的方法是必须被调用的。如 visit，visitEnd。
 >
-> 2、[{visitSource}],用[{}]括起来的方法最多一次调用。（也就是可以调用一次，或者不调用）
+>  2、[{visitSource}],用[{}]括起来的方法最多一次调用。（也就是可以调用一次，或者不调用）
 >
-> 3、({visitAnnotation}) , 用（{}）* 括起来的方法代表可被调用任意次，|表示 方法间的调用顺序也随意。
+>  3、({visitAnnotation}) , 用（{}）* 括起来的方法代表可被调用任意次，|表示 方法间的调用顺序也随意。
 >
-> ps：其实符号倒无所谓，我们只需记得这些方法被调用的先后顺序，以及哪些在调用期间可被多次调用，无顺序调用即可。
+>  ps：其实符号倒无所谓，我们只需记得这些方法被调用的先后顺序，以及哪些在调用期间可被多次调用，无顺序调用即可。
 
 ### ClassReader
 
@@ -220,6 +220,174 @@ public class AutoTrace extends ClassVisitor {
 
 ###### 1、栗子：读取指定class文件的信息
 
+（1）准备一个类
 
+```java
+package com.sunnyday.appclick_asm.test;
+
+/**
+ * Create by SunnyDay on 19:48 2020/07/18
+ */
+public class Person {
+    public String age;
+    public String name;
+
+    public void run(){
+        System.out.println("person can run!");
+    }
+}
+
+```
+
+（2）定义ClassVisitor的子类，用于输出信息。
+
+```java
+
+/**
+ * Create by SunnyDay on 19:48 2020/07/18
+ */
+public class ReadClassInfo extends ClassVisitor {
+    public ReadClassInfo(int api) {
+        super(api);
+    }
+
+    @Override
+    public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
+        super.visit(version, access, name, signature, superName, interfaces);
+        System.out.println("--------visit--------");
+        System.out.println("jdk version:"+version);
+        System.out.println("权限修饰符access:"+access);
+        System.out.println("泛型信息signature:"+signature);
+        System.out.println("类名name:"+name);
+        System.out.println("父类名superName:"+superName);
+
+    }
+
+    @Override
+    public FieldVisitor visitField(int access, String name, String descriptor, String signature, Object value) {
+        System.out.println("--------visitField--------");
+        System.out.println("权限修饰符access:"+access);
+        System.out.println("泛型信息signature:"+signature);
+        System.out.println("方法名name:"+name);
+        System.out.println("descriptor:"+descriptor);
+        System.out.println("value:"+value);
+        return super.visitField(access, name, descriptor, signature, value);
+    }
+
+    @Override
+    public MethodVisitor visitMethod(int access, String name, String descriptor, String signature, String[] exceptions) {
+        System.out.println("--------visitMethod--------");
+        System.out.println("权限修饰符access:"+access);
+        System.out.println("泛型信息signature:"+signature);
+        System.out.println("方法名name:"+name);
+        System.out.println("descriptor:"+descriptor);
+        return super.visitMethod(access, name, descriptor, signature, exceptions);
+    }
+
+    @Override
+    public void visitEnd() {
+        System.out.println("--------visitEnd--------");
+        super.visitEnd();
+    }
+}
+
+```
+
+（3）简单调用及其log
+
+```java
+public class MainTest {
+    public static void main(String[] args) {
+      readClassInfo();
+    }
+    /**
+     * 分析类：读取类的信息。
+     */
+    private static void readClassInfo() {
+        try {
+            ReadClassInfo readClassInfo = new ReadClassInfo(Opcodes.ASM7);
+            // 分析person类的字节码
+            ClassReader classReader = new ClassReader("com.sunnyday.appclick_asm.test.Person");
+            classReader.accept(readClassInfo, 0);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+}
+
+--------visit--------
+jdk version:51
+权限修饰符access:33
+泛型信息signature:null
+类名name:com/sunnyday/appclick_asm/test/Person
+父类名superName:java/lang/Object
+--------visitField--------
+权限修饰符access:1
+泛型信息signature:null
+方法名name:age
+descriptor:Ljava/lang/String;
+value:null
+--------visitField--------
+权限修饰符access:1
+泛型信息signature:null
+方法名name:name
+descriptor:Ljava/lang/String;
+value:null
+--------visitMethod--------
+权限修饰符access:1
+泛型信息signature:null
+方法名name:<init>
+descriptor:()V
+--------visitMethod--------
+权限修饰符access:1
+泛型信息signature:null
+方法名name:run
+descriptor:()V
+--------visitEnd--------
+
+Process finished with exit code 0
+
+```
+
+###### 2、api简介
+
+（1）首先是Opcodes.ASM7参数，这个为ASM的实现版本。由于自定义ClassVisitor要求要调用父类的构造传这个参数，所以我们使用时传递下即可。Opcodes下有好多常量值。详情可以看这个类的源码。
+
+（2）ClassReader类构造读取字节码文件
+
+```java
+//1、最简单使用方式，指明类的全路径名即可。底层使用ClassLoader来加载class文件
+ public ClassReader(final String className) throws IOException {
+    this(
+        readStream(
+            ClassLoader.getSystemResourceAsStream(className.replace('.', '/') + ".class"), true));
+  }
+//2、 传入输入流（字节码文件的）其实和1源码一致。如下实例代码：
+public ClassReader(final InputStream inputStream) throws IOException {
+    this(readStream(inputStream, false));
+  }
+// 实例代码
+  String className = "com.sunnyday.appclick_asm.test.Person.class";
+      InputStream inputStream =  ClassLoader.getSystemResourceAsStream(className.replace('.', '/') + ".class");
+
+//3、其他构造略。。。。
+    
+```
+
+
+
+（3）ClassReader的accept
+
+```java
+ /**
+   * @function 访问class文件信息
+   * @param classVisitor 用户自定义的classVisitor
+   * @param parsingOptions 解析类时的筛选条件，下面常量值之一  {@link
+   *     #ClassReader.SKIP_CODE}, {@link #ClassReader.SKIP_DEBUG}, {@link #ClassReader.SKIP_FRAMES} or {@link #ClassReader.EXPAND_FRAMES}.
+   */
+  public void accept(final ClassVisitor classVisitor, final int parsingOptions) {
+    accept(classVisitor, new Attribute[0], parsingOptions);
+  }
+```
 
 待续！！！
