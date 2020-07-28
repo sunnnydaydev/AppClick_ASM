@@ -473,4 +473,11 @@ public class MyClassLoader extends ClassLoader {
 }
 ```
 
-待续！！！
+
+
+###  修改类
+
+> 修改字节码文件、可进行增删加类成员、类方法等操作
+>
+> 待参考->ASM4使用指南
+
